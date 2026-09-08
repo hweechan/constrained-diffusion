@@ -49,6 +49,7 @@ def main(
     steps=128,
     max_total_injections=0,
     inject_gap_size=0,
+    gap_mode="sigma_star",
 ):
     if isinstance(task_id, int):
         task_id = str(task_id)
@@ -165,6 +166,7 @@ def main(
                     timeout=timeout,
                     trace=trace,
                     orig_lex_map=orig_lex_map,
+                    gap_mode=gap_mode,
                 )
             except Exception as e:
                 print(
@@ -197,6 +199,7 @@ def main(
             "autocompletion_raw": autocompletion_raw,
             "autocompletion": autocompletion,
             "time_taken_autocompletion": time_taken_autocompletion,
+            "gap_mode": gap_mode,
         }
         try:
             with open(output_file, "a") as f:

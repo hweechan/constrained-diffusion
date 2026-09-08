@@ -75,6 +75,8 @@ def check_valid(
     subtokens: dict[str, list[str]] = frozendict.frozendict(),
     supertokens: dict[str, list[str]] = frozendict.frozendict(),
     strip_chars: str | None = None,
+    gap_mode: str = "sigma_star",
+    single_token_lexing=None,
 ):
     """
     Check if the currently generated tokens are valid according to the constraints.
@@ -85,12 +87,11 @@ def check_valid(
         terminals,
         trace=trace,
         prelex=prelex,
-        #  single_token_lexing=all_possible_lexings,
-        #  inject_gap_size=inject_gap_size,
-        #  max_total_injections=max_total_injections,
+        single_token_lexing=single_token_lexing,
         subtokens=subtokens,
         supertokens=supertokens,
         strip_chars=strip_chars,
+        gap_mode=gap_mode,
     )
     if trace:
         print(
@@ -129,6 +130,7 @@ def generate(
     additional_stuff=None,
     constrain: bool = True,
     max_resamples: int = 100,
+    gap_mode: str = "sigma_star",
 ) -> Tuple[torch.LongTensor, List[Tuple[int, List[Optional[str]]]], bool]:
     """
     Args:
@@ -346,6 +348,8 @@ def generate(
                             subtokens=subtokens,
                             supertokens=supertokens,
                             strip_chars=strip_chars,
+                            gap_mode=gap_mode,
+                            single_token_lexing=all_possible_lexings,
                         )
                     else:
                         intersection_empty = False

@@ -158,6 +158,7 @@ class FimModel(Model):
         timeout: int = 60,
         trace: bool = False,
         constrain: bool = True,
+        gap_mode: str = "sigma_star",
     ) -> tuple[str, str, str, bool, int, list, str, str, float]:
         """
         Generates a response from the model based on the provided instance.
@@ -226,6 +227,7 @@ class FimModel(Model):
                         do_sample=temperature > 0,
                         num_beams=1,
                         constrain=constrain,
+                        gap_mode=gap_mode,
                     )
                 locally_generated = outputs.shape[-1] - inputs.input_ids.shape[-1]
                 total_generated += locally_generated

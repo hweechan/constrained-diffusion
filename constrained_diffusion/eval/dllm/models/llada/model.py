@@ -154,6 +154,7 @@ class LLaDAModel(Model):
         alg: str = "low_confidence",
         timeout: int = 60,
         trace: bool = False,
+        gap_mode: str = "sigma_star",
     ) -> tuple[str, str, list[str], str, bool, list, str, str, float]:
         prompt, prompt_len, suffix, start_line, prompt_raw = self.prepare_prompt(
             instance, tokenizer, model, trace
@@ -182,6 +183,7 @@ class LLaDAModel(Model):
                 strip_chars=instance.strip_chars(),
                 max_total_injections=max_total_injections,
                 inject_gap_size=inject_gap_size,
+                gap_mode=gap_mode,
             ):
                 pass
         if out is None:

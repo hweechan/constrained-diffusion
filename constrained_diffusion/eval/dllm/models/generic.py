@@ -60,6 +60,7 @@ class Model(object):
         alg: str = "low_confidence",
         timeout: int = 60,
         trace: bool = False,
+        gap_mode: str = "sigma_star",
     ) -> tuple[str, str, list[str], str, bool, list, str, str, float]:
         """
         Generates a response from the model based on the provided messages and additional constraints.

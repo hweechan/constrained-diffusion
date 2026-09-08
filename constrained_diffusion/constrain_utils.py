@@ -354,19 +354,26 @@ def generated_language(
     subtokens: dict[str, list[str]] = frozendict.frozendict(),
     supertokens: dict[str, list[str]] = frozendict.frozendict(),
     strip_chars=None,
+    gap_mode="sigma_star",
 ) -> DFA:
     """
     Generate a language that represents the already generated tokens.
     Args:
         tokens: List of None or str for missing or generated tokens.
+        gap_mode: How to represent mask/gap positions in the FSA.
+            "sigma_star": use self-loops over all grammar terminals (Σ*). Fast but loose.
+            "vocab": use actual vocab token lexings for each gap position (V). Tighter but slower.
 
     Returns:
         Nondeterministic finite automaton representing the generated language.
 
     """
+    assert gap_mode in ("sigma_star", "vocab"), f"Unknown gap_mode: {gap_mode}"
     assert (
         single_token_lexing is not None or inject_gap_size == 0
     ), "inject_gap_size > 0 requires single_token_lexing"
+    if gap_mode == "vocab":
+        assert single_token_lexing is not None, "gap_mode='vocab' requires single_token_lexing"
     assert (not supertokens and not subtokens) or (
         supertokens and subtokens
     ), "Either both or none of supertokens and subtokens must be provided"
@@ -629,8 +636,29 @@ def generated_language(
                     total_injections += 1
                     # this could be an accepting state (by inserting EOS)
                     # but we don't model it as the DLLM very unlikely will insert EOS mid-sequence
+            elif gap_mode == "vocab":
+                # vocab mode: only allow terminal symbols that actual vocab tokens can produce
+                vocab_terminals = set()
+                for lexing_entry in single_token_lexing:
+                    for sym in lexing_entry[0]:
+                        vocab_terminals.add(sym)
+                for token in vocab_terminals:
+                    constrained_fsa.add_transition(str(wi - 1), token, str(wi - 1))
+                # and all previous skip tokens can end here
+                for prev_token in prev_last_tokens:
+                    for prevprev in prev_last_tokens[prev_token]:
+                        prev_state, prev_prefix = prevprev
+                        if not admissable_prefix_suffix_combo(
+                            prev_token, prev_prefix, ""
+                        ):
+                            continue
+                        constrained_fsa.add_transition(
+                            str(prev_state), prev_token, str(wi - 1)
+                        )
+                for token in vocab_terminals:
+                    prev_last_tokens[token].append((str(wi - 1), [""]))
             else:
-                # add the .* between fixed lexings for non-zero gaps
+                # sigma_star mode: add the .* between fixed lexings for non-zero gaps
                 # all tokens can be repeated indefinitely here
                 for token in terminals:
                     constrained_fsa.add_transition(str(wi - 1), token, str(wi - 1))
@@ -681,6 +709,22 @@ def generated_language(
                     wi, prev_last_tokens, single_token_lexing, True, True
                 )
                 total_injections += 1
+        elif gap_mode == "vocab":
+            vocab_terminals = set()
+            for lexing_entry in single_token_lexing:
+                for sym in lexing_entry[0]:
+                    vocab_terminals.add(sym)
+            for token in vocab_terminals:
+                constrained_fsa.add_transition(str(wi - 1), token, str(wi - 1))
+            # and all previous skip tokens can end here
+            for prev_token in prev_last_tokens:
+                for prevprev in prev_last_tokens[prev_token]:
+                    prev_state, prev_prefix = prevprev
+                    if not admissable_prefix_suffix_combo(prev_token, prev_prefix, ""):
+                        continue
+                    constrained_fsa.add_transition(
+                        str(prev_state), prev_token, str(wi - 1)
+                    )
         else:
             for token in terminals:
                 constrained_fsa.add_transition(str(wi - 1), token, str(wi - 1))

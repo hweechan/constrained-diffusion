@@ -82,6 +82,7 @@ def generate(
     strip_chars: str = None,
     additional_stuff=None,
     constrain: bool = True,
+    gap_mode: str = "sigma_star",
     **kwargs,
 ) -> Tuple[
     Union[GenerateNonBeamOutput, torch.LongTensor],
@@ -426,6 +427,7 @@ def generate(
             strip_chars=strip_chars,
             additional_stuff=additional_stuff,
             constrain=constrain,
+            gap_mode=gap_mode,
             **model_kwargs,
         )
 
@@ -461,6 +463,7 @@ def _sample(
     additional_stuff=None,
     constrain: bool = True,
     max_resamples: int = 100,
+    gap_mode: str = "sigma_star",
     **model_kwargs,
 ) -> Tuple[
     Union[GenerateNonBeamOutput, torch.LongTensor],
@@ -713,12 +716,13 @@ def _sample(
                     terminals,
                     # trace=trace,
                     prelex=prelex,
-                    # single_token_lexing=all_possible_lexings,
+                    single_token_lexing=all_possible_lexings,
                     # inject_gap_size=inject_gap_size,
                     # max_total_injections=max_total_injections,
                     subtokens=subtokens,
                     supertokens=supertokens,
                     strip_chars=strip_chars,
+                    gap_mode=gap_mode,
                 )
                 if trace:
                     print(
@@ -787,12 +791,13 @@ def _sample(
                             lex_map,
                             terminals,
                             prelex=prelex,
-                            # single_token_lexing=all_possible_lexings,
+                            single_token_lexing=all_possible_lexings,
                             # inject_gap_size=inject_gap_size,
                             # max_total_injections=max_total_injections,
                             strip_chars=strip_chars,
                             subtokens=subtokens,
                             supertokens=supertokens,
+                            gap_mode=gap_mode,
                         )
                         if trace:
                             print(

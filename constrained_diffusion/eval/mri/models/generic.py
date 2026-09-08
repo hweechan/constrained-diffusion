@@ -55,6 +55,7 @@ class Model(object):
         prelex: str | None = None,
         timeout: int = 60,
         trace: bool = False,
+        gap_mode: str = "sigma_star",
     ) -> tuple[str, str, str, bool, int, list, str, str, float]:
         """
         Generates a response from the model based on the provided messages and additional constraints.

@@ -47,6 +47,7 @@ def main(
     task_id=None,
     max_total_injections=0,
     inject_gap_size=0,
+    gap_mode="sigma_star",
 ):
     if isinstance(task_id, int):
         task_id = str(task_id)
@@ -152,6 +153,7 @@ def main(
                     prelex=prelex,
                     timeout=timeout,
                     trace=trace,
+                    gap_mode=gap_mode,
                 )
             except Exception as e:
                 print("Exception during generation:")
@@ -183,6 +185,7 @@ def main(
             "autocompletion_raw": autocompletion_raw,
             "autocompletion": autocompletion,
             "time_taken_autocompletion": time_taken_autocompletion,
+            "gap_mode": gap_mode,
         }
         try:
             with open(output_file, "a") as f:
