@@ -233,80 +233,24 @@ def preprocessed_generate_stuff(
     prelex: str | None = None,
     subtokens: dict[str, list[str]] = frozendict.frozendict(),
     strip_chars: str = None,
+    gap_mode: str = "sigma_star",
 ):
     supertokens = derive_supertokens(subtokens)
-    return None, None, supertokens
-    # compile the lex_map
-    # rules out the lexings of reserved tokens too
-    # however we need to manually allow EOS again
+    if gap_mode != "vocab":
+        return None, None, supertokens
+    # vocab mode: collect the set of lexings that vocab tokens can produce
+    # (no numpy masks needed — only the lexing keys are used in generated_language)
     all_tokens_decoded = tokenizer.batch_decode(
         torch.arange(0, tokenizer.vocab_size + len(tokenizer.added_tokens_decoder))
     )
-    all_possible_lexings, no_lexing_tokens = all_lexings_mask(
-        all_tokens_decoded,
-        lex_map,
-        trace,
-        strip_chars=strip_chars,
-        prelex=prelex,
-    )
+    all_lexs = all_lexings(all_tokens_decoded, lex_map, prelex, strip_chars)
+    vocab_lexings = set()
+    for lexings in all_lexs:
+        for lexing in lexings:
+            vocab_lexings.add((tuple(lexing[0]), lexing[1], lexing[2]))
     if trace:
-        print("All possible lexings:", len(all_possible_lexings))
-        print("Maximum lexing size:", max([len(x[0]) for x in all_possible_lexings]))
-        print(
-            "Average lexing size:",
-            np.mean([len(x[0]) for x in all_possible_lexings]),
-        )
-    # further rule out all lexings that can not appear in the grammar
-    _lexings = list(all_possible_lexings)
-    terminals = constraint_lang.get_terminals()
-    for lexing in tqdm(_lexings) if trace else _lexings:
-        lexing_lang = generated_language(
-            [None, lexing, None],
-            lex_map,
-            terminals,
-            prelex=prelex,
-            subtokens=subtokens,
-            supertokens=supertokens,
-            strip_chars=strip_chars,
-        )
-        intersection_empty = constraint_lang.is_intersection_empty(lexing_lang, 100)
-        if intersection_empty:
-            # this lexing is ruled out
-            no_lexing_tokens += all_possible_lexings[lexing]
-            all_possible_lexings.pop(lexing)
-    for eot_index in [
-        k
-        for k, v in tokenizer.added_tokens_decoder.items()
-        if v.content
-        # NOTE: these need to be updated for each new model
-        in (
-            "<|eot_id|>",
-            "<|im_end|>",
-            "<file_sep>",
-            "<｜end▁of▁sentence｜>",
-            "<|endofmask|>",
-            "<eom>",
-            "<eos>",
-            "<|file_separator|>",
-            "</s>",
-            "<fim_middle>",
-            "<MID>",
-            "<|dlm_pad|>",
-            tokenizer.special_tokens_map.get("eos_token", "<|endoftext|>"),
-        )
-    ]:
-        no_lexing_tokens[eot_index] = 0
-    if trace:
-        remaining_lexigns = set(all_possible_lexings)
-        print("All possible remaining lexings:", len(remaining_lexigns))
-        if len(remaining_lexigns) < 10:
-            print("Remaining lexings:", remaining_lexigns)
-        print("Maximum lexing size:", max([len(x[0]) for x in remaining_lexigns]))
-        print(
-            "Average lexing size:",
-            np.mean([len(x[0]) for x in remaining_lexigns]),
-        )
-    return all_possible_lexings, no_lexing_tokens, supertokens
+        print("Vocab lexings:", len(vocab_lexings))
+    return vocab_lexings, None, supertokens
 
 
 def interleave_with_value(lst, value):

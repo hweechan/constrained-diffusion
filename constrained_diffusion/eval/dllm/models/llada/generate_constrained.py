@@ -165,6 +165,7 @@ def generate(
             prelex=prelex,
             subtokens=subtokens,
             strip_chars=strip_chars,
+            gap_mode=gap_mode,
         )
     elif additional_stuff is None:
         additional_stuff = None, None, {}

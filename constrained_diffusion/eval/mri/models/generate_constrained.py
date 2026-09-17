@@ -509,6 +509,7 @@ def _sample(
             prelex=prelex,
             subtokens=subtokens,
             strip_chars=strip_chars,
+            gap_mode=gap_mode,
         )
     elif not constrain:
         additional_stuff = None, None, {}

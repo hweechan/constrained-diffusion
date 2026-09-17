@@ -115,6 +115,7 @@ def main(
                 prelex=prelex,
                 subtokens=subtokens,
                 strip_chars=instance.strip_chars(),
+                gap_mode=gap_mode,
             )
 
         set_seed(seed)
