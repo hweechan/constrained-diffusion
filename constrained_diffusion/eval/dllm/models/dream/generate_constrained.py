@@ -320,6 +320,7 @@ def _sample(
             subtokens=subtokens,
             strip_chars=strip_chars,
             gap_mode=gap_mode,
+            inject_gap_size=inject_gap_size,
         )
     if constrain:
         # Dict(가능한 문법 심볼 매핑 전체), np.ndarray, Dict(여러 토큰이 합쳐져서 하나의 심볼이 되는 경우)

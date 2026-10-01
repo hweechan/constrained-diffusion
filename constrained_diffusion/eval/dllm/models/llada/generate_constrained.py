@@ -166,6 +166,7 @@ def generate(
             subtokens=subtokens,
             strip_chars=strip_chars,
             gap_mode=gap_mode,
+            inject_gap_size=inject_gap_size,
         )
     elif additional_stuff is None:
         additional_stuff = None, None, {}

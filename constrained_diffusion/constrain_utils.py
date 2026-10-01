@@ -234,9 +234,10 @@ def preprocessed_generate_stuff(
     subtokens: dict[str, list[str]] = frozendict.frozendict(),
     strip_chars: str = None,
     gap_mode: str = "sigma_star",
+    inject_gap_size: int = 0,
 ):
     supertokens = derive_supertokens(subtokens)
-    if gap_mode != "vocab":
+    if gap_mode != "vocab" and inject_gap_size == 0:
         return None, None, supertokens
     # vocab mode: collect the set of lexings that vocab tokens can produce
     # (no numpy masks needed — only the lexing keys are used in generated_language)

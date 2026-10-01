@@ -104,6 +104,7 @@ def main(
                 subtokens=subtokens,
                 strip_chars=instance.strip_chars(),
                 gap_mode=gap_mode,
+                inject_gap_size=inject_gap_size,
             )
 
         set_seed(seed)
