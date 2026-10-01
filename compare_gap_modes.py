@@ -69,12 +69,21 @@ def compare_raw(rec_a, rec_b, label_a, label_b, out):
     out.write(f"  {label_b}: {fmt_pct(to_b, len(common))}\n\n")
 
     # --- Resamples ---
-    res_a = [rec_a[iid].get("resamples", 0) or 0 for iid in common]
-    res_b = [rec_b[iid].get("resamples", 0) or 0 for iid in common]
+    def resample_count(v):
+        if isinstance(v, list):
+            return len(v)
+        if isinstance(v, (int, float)):
+            return v
+        return 0
+
+    res_a = [resample_count(rec_a[iid].get("resamples", 0)) for iid in common]
+    res_b = [resample_count(rec_b[iid].get("resamples", 0)) for iid in common]
     if any(r > 0 for r in res_a + res_b):
         out.write(f"--- Resamples ---\n")
         out.write(f"  {label_a}: mean={statistics.mean(res_a):.2f}  median={statistics.median(res_a):.1f}  total={sum(res_a)}\n")
-        out.write(f"  {label_b}: mean={statistics.mean(res_b):.2f}  median={statistics.median(res_b):.1f}  total={sum(res_b)}\n\n")
+        out.write(f"  {label_b}: mean={statistics.mean(res_b):.2f}  median={statistics.median(res_b):.1f}  total={sum(res_b)}\n")
+        diff_resamples = sum(1 for a, b in zip(res_a, res_b) if a != b)
+        out.write(f"  Instances with different resample count: {diff_resamples}/{len(common)}\n\n")
 
     # --- Time taken ---
     times_a = [rec_a[iid].get("time_taken", 0) for iid in common if rec_a[iid].get("time_taken") is not None]
